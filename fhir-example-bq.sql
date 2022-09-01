@@ -1,8 +1,9 @@
 # Show all imaging studies for patients diagnosed with Malignant Neoplasm of breast who are HER2-, ER-, and PR-
 # Joe Murray
-# FHIR R4
+# Schema: FHIR R4
 # Bigquery syntax
 #
+-- create a view for patient
 WITH patient as (
 SELECT id as patientid, 
        i.value as MRN,
@@ -32,7 +33,7 @@ WHERE  code.system = 'http://snomed.info/sct'
    AND code.code = '254837009' # malignant neoplasm of breast
 )
 ,
--- Create a view of all HER2 values.
+-- Create a view of all HER2- Observations.
 her2_neg as (
   SELECT subject.patientid,
          value.quantity.value,
@@ -51,6 +52,7 @@ her2_neg as (
     AND codeval.system = 'http://snomed.info/sct'
     and codeval.code = '260385009' # NEGATIVE
 ),
+-- create a view for ER- Observations
 er_neg as (
   SELECT subject.patientid,
          value.quantity.value,
@@ -69,6 +71,7 @@ er_neg as (
     AND codeval.system = 'http://snomed.info/sct'
     and codeval.code = '260385009' # NEGATIVE
 ),
+-- create a view for PR- Observations
 pr_neg as (
   SELECT subject.patientid,
          value.quantity.value,
@@ -88,6 +91,7 @@ pr_neg as (
     and codeval.code = '260385009' # NEGATIVE
 )
 
+-- find patients that are 'triple-negative' (HER2-, ER-, PR-) for all receptors, and have a malignant breast cancer Condition
 SELECT patient.patientid, 
        patient.MRN, 
        patient.firstname,
